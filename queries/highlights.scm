@@ -12,8 +12,19 @@
   (false)
 ] @boolean
 
-(binaryop) @operator
-(unaryop) @operator
+[
+  (binaryop_multiplicative)
+  (binaryop_additive)
+  (binaryop_bitshift)
+  (binaryop_comparison)
+  (binaryop_equality)
+  (binaryop_bitand)
+  (binaryop_bitxor)
+  (binaryop_bitor)
+  (binaryop_and)
+  (binaryop_or)
+  (unaryop)
+] @operator
 
 (id) @variable
 (param identifier: (id) @variable.parameter)

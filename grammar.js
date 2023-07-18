@@ -83,6 +83,7 @@ module.exports = grammar({
         super: () => "super",
         local: () => "local",
         tailstrict: () => "tailstrict",
+        in: () => "in",
 
         // Types
         number: ($) => $._number,
@@ -151,18 +152,29 @@ module.exports = grammar({
                 ),
             ),
 
+        binaryop_multiplicative: () => choice("*", "/", "%"),
+        binaryop_additive: () => choice("+", "-"),
+        binaryop_bitshift: () => choice("<<", ">>"),
+        binaryop_comparison: ($) => choice("<", "<=", ">", ">=", $.in),
+        binaryop_equality: () => choice("==", "!="),
+        binaryop_bitand: () => "&",
+        binaryop_bitxor: () => "^",
+        binaryop_bitor: () => "|",
+        binaryop_and: () => "&&",
+        binaryop_or: () => "||",
+
         _binary_expr: ($) => {
             const table = [
-                [PREC.multiplicative, choice("*", "/", "%")],
-                [PREC.additive, choice("+", "-")],
-                [PREC.bitshift, choice("<<", ">>")],
-                [PREC.comparison, choice("<", "<=", ">", ">=", "in")],
-                [PREC.equality, choice("==", "!=")],
-                [PREC.bitand, "&"],
-                [PREC.bitxor, "^"],
-                [PREC.bitor, "|"],
-                [PREC.and, "&&"],
-                [PREC.or, "||"],
+                [PREC.multiplicative, $.binaryop_multiplicative],
+                [PREC.additive, $.binaryop_additive],
+                [PREC.bitshift, $.binaryop_bitshift],
+                [PREC.comparison, $.binaryop_comparison],
+                [PREC.equality, $.binaryop_equality],
+                [PREC.bitand, $.binaryop_bitand],
+                [PREC.bitxor, $.binaryop_bitxor],
+                [PREC.bitor, $.binaryop_bitor],
+                [PREC.and, $.binaryop_and],
+                [PREC.or, $.binaryop_or],
             ];
             return choice(
                 ...table.map(([precedence, operator]) =>
@@ -210,7 +222,7 @@ module.exports = grammar({
         // error expr
         expr_error: ($) => prec.right(seq("error", $.expr)),
 
-        _expr_super: ($) => prec(PREC.comparison, seq($.expr, "in", $.super)),
+        _expr_super: ($) => prec(PREC.comparison, seq($.expr, $.in, $.super)),
 
         _parenthesis: ($) => seq("(", $.expr, ")"),
 
@@ -246,7 +258,7 @@ module.exports = grammar({
         objlocal: ($) => seq($.local, $.bind),
 
         compspec: ($) => repeat1(choice($.forspec, $.ifspec)),
-        forspec: ($) => seq("for", $.id, "in", $.expr),
+        forspec: ($) => seq("for", $.id, $.in, $.expr),
         ifspec: ($) => seq("if", $.expr),
 
         fieldname: ($) =>
