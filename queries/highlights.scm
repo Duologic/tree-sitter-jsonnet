@@ -1,16 +1,39 @@
-"if" @conditional
+(comment) @comment
+(id) @variable
+(import) @include
+(null) @constant.builtin
+(number) @number
+(string) @string
+
+(fieldname (id) @label)
+(fieldname) @string.special
+
+"for" @repeat
+(in) @keyword.operator
+
+[
+  "if"
+  "then"
+  "else"
+] @conditional
+
 [
   (local)
   "function"
+  "assert"
 ] @keyword
-(comment) @comment
 
-(string) @string
-(number) @number
 [
   (true)
   (false)
 ] @boolean
+
+[
+  (dollar)
+  (self)
+] @variable.builtin
+((id) @variable.builtin
+ (#eq? @variable.builtin "std"))
 
 [
   (binaryop_multiplicative)
@@ -26,13 +49,44 @@
   (unaryop)
 ] @operator
 
-(id) @variable
-(param identifier: (id) @variable.parameter)
-(bind function: (id) @function)
-(fieldname) @string.special
 [
   "["
   "]"
   "{"
   "}"
+  "("
+  ")"
 ] @punctuation.bracket
+
+[
+  "."
+  ","
+  ";"
+  ":"
+  "::"
+  ":::"
+] @punctuation.delimiter
+
+; Function declaration
+(bind
+  function: (id) @function
+  params: (params
+            (param
+              identifier: (id) @parameter
+            )
+          )
+)
+
+; Function call
+(expr
+  (expr (id) @function.call)
+  "("
+  (args
+    (named_argument
+      (id) @parameter
+    )
+  )?
+  ")"
+)
+
+(ERROR) @error
