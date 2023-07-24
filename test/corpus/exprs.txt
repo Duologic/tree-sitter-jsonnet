@@ -239,3 +239,16 @@ Application priority
     (expr
       (expr (id))
       (args (expr (number)) (expr (number))))))
+
+======================
+Implicit plus with empty object
+======================
+
+({}) { }
+
+---
+
+(document
+  (expr
+    (expr
+      (expr))))

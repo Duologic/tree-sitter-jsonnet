@@ -62,7 +62,7 @@ module.exports = grammar({
                 $._conditional,
                 $._binary_expr,
                 $._unary_expr,
-                $._expr_objinside,
+                $._implicit_plus,
                 $.anonymous_function,
                 $._assert_expr,
                 $.import,
@@ -198,7 +198,7 @@ module.exports = grammar({
 
         unaryop: () => choice("-", "+", "!", "~"),
 
-        _expr_objinside: ($) => seq($.expr, "{", $.objinside, "}"),
+        _implicit_plus: ($) => seq($.expr, $._object),
 
         anonymous_function: ($) =>
             prec.right(
