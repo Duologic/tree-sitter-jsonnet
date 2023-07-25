@@ -232,11 +232,7 @@ module.exports = grammar({
                 commaSep1($.member, true),
                 seq(
                     repeat(seq($.objlocal, ",")),
-                    "[",
-                    $.expr,
-                    "]",
-                    ":",
-                    $.expr,
+                    $.field,
                     repeat(seq(",", $.objlocal)),
                     optional(","),
                     $.forspec,
@@ -263,7 +259,6 @@ module.exports = grammar({
 
         fieldname: ($) =>
             prec.right(
-                PREC.application_indexing,
                 choice($.id, $.string, seq("[", $.expr, "]")),
             ),
 
