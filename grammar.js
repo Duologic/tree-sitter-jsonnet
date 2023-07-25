@@ -101,7 +101,7 @@ module.exports = grammar({
                     $.import,
                     $.importstr,
                     $.expr_error,
-                    seq($.expr, "in", $.super),
+                    prec(PREC.comparison,seq($.expr, "in", $.super)),
                     seq("(", $.expr, ")")
             ),
 
@@ -122,7 +122,7 @@ module.exports = grammar({
                [PREC.multiplicative, choice("*", "/", "%")],
                [PREC.additive, choice("+", "-")],
                [PREC.bitshift, choice("<<", ">>")],
-               [PREC.comparison, choice("<", "<=", ">", ">=")],
+               [PREC.comparison, choice("<", "<=", ">", ">=", "in")],
                [PREC.equality, choice("==", "!=")],
                [PREC.bitand, '&'],
                [PREC.bitxor, '^'],
