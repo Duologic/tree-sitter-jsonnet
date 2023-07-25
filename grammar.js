@@ -168,22 +168,31 @@ module.exports = grammar({
             choice(
                 // seq($.member, repeat(seq(",", $.member)), optional(",")),
                 commaSep1($.member, true),
-                seq(
-                    repeat(seq($.objlocal, ",")),
-                    "[",
-                    $.expr,
-                    "]",
-                    ":",
-                    $.expr,
-                    repeat(seq(",", $.objlocal)),
-                    optional(","),
-                    $.forspec,
-                    optional($.compspec)
-                )
+                $._objforloop,
+            ),
+
+        _objforloop: ($) =>
+            seq(
+                repeat(seq($.objlocal, ",")),
+                //"[", $.expr, "]",
+                //":",
+                //$.expr,
+                $.field,
+                repeat(seq(",", $.objlocal)),
+                optional(","),
+                $.forspec,
+                optional($.compspec),
             ),
 
         member: ($) =>
-            prec.right(PREC.member, choice($.objlocal, $.assert, $.field)),
+            prec.right(
+                PREC.member,
+                choice(
+                    $.objlocal,
+                    $.assert,
+                    $.field,
+                )
+            ),
 
         field: ($) =>
             choice(
@@ -203,7 +212,13 @@ module.exports = grammar({
         ifspec: ($) => seq("if", $.expr),
 
         fieldname: ($) =>
-            prec.right(choice($.id, $.string, seq("[", $.expr, "]"))),
+            prec.right(
+                choice(
+                    $.id,
+                    $.string,
+                    seq("[", $.expr, "]")
+                )
+            ),
 
         bind: ($) =>
             choice(
