@@ -7,9 +7,10 @@
 
 (fieldname (id) @label)
 (fieldname) @string.special
+(functionfield (fieldname (id) @keyword.function))
 
 "for" @repeat
-(in) @keyword.operator
+"in" @keyword.operator
 
 [
   "if"
@@ -31,6 +32,7 @@
 [
   (dollar)
   (self)
+  (super)
 ] @variable.builtin
 ((id) @variable.builtin
  (#eq? @variable.builtin "std"))
@@ -77,9 +79,15 @@
           )
 )
 
+(params
+  (param
+    identifier: (id) @parameter
+  )
+)
+
 ; Function call
-(expr
-  (expr (id) @function.call)
+(functioncall
+  (id) @function.call
   "("
   (args
     (named_argument
