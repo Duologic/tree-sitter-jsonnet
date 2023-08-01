@@ -7,10 +7,10 @@ Indexing priority
 ---
 
 (document
-  (expr
-    left: (expr (string (string_start) (string_content) (string_end)))
+  (binaryop
+    left: (string (string_start) (string_content) (string_end))
     operator: (binaryop_additive)
-    right: (expr (expr (id)) (id))
+    right: (fieldaccess (id) last: (id))
   ))
 
 ======================
@@ -22,10 +22,10 @@ Indexing priority 2
 ---
 
 (document
-  (expr
-    left: (expr (string (string_start) (string_content) (string_end)))
+  (binaryop
+    left: (string (string_start) (string_content) (string_end))
     operator: (binaryop_additive)
-    right: (expr (expr (id)) (expr (id)))
+    right: (indexing (id) (id))
   ))
 
 ======================
@@ -37,10 +37,30 @@ Indexing priority 3
 ---
 
 (document
-  (expr
-    left: (expr (string (string_start) (string_content) (string_end)))
+  (binaryop
+    left: (string (string_start) (string_content) (string_end))
     operator: (binaryop_additive)
-    right: (expr (super) (id))
+    right: (fieldaccess_super (super) (id))
+  ))
+
+======================
+Indexing priority 4
+======================
+
+"Hello" + super['name']
+
+---
+
+(document
+  (binaryop
+    left: (string (string_start) (string_content) (string_end))
+    operator: (binaryop_additive)
+    right: (indexing_super
+                (super)
+                (string
+                    (string_start)
+                    (string_content)
+                    (string_end)))
   ))
 
 ======================
@@ -57,40 +77,34 @@ Parses example 2
 
 ---
 (document
-  (expr
+  (object
     (member
       (field (fieldname (id))
-        (expr
+        (object
           (member
             (field (fieldname (id))
-              (expr (string (string_start) (string_content) (string_end)))
+              (string (string_start) (string_content) (string_end))
             ))
           (member
             (field (fieldname (id))
-               (expr
+               (binaryop
                  left:
-                   (expr
-                      left:
-                        (expr
-                          (string (string_start) (string_content) (string_end))
-                          )
+                   (binaryop
+                      left: (string (string_start) (string_content) (string_end))
                       operator: (binaryop_additive)
-                      right: (expr (expr (self)) (id)))
+                      right: (fieldaccess (self) last: (id)))
                   operator: (binaryop_additive)
-                  right:
-                    (expr
-                       (string (string_start) (string_content) (string_end))
-                       )
+                  right: (string (string_start) (string_content) (string_end))
                  )))
             )))
       (member
         (field (fieldname (id))
-          (expr
-             (expr (expr (self)) (id))
-             (member
-               (field (fieldname (id))
-                  (expr
-                    (string (string_start) (string_content) (string_end))
+          (implicit_plus
+             (fieldaccess (self) last: (id))
+             (object
+                 (member
+                   (field (fieldname (id))
+                        (string (string_start) (string_content) (string_end))
        ))))))))
 
 =================================
@@ -104,11 +118,13 @@ should parse basic call foo(1,2)
 ---
 
 (document
-  (expr
+  (object
      (member (field (fieldname (id))
-               (expr (expr (id))
-                     (args (expr (number))
-                           (expr (number))))))))
+               (functioncall
+                   (id)
+                   (args (number)
+                         (number)))
+))))
 
 =================================
 should parse basic call foo(1,2,3)
@@ -121,13 +137,14 @@ should parse basic call foo(1,2,3)
 ---
 
 (document
-  (expr
+  (object
      (member (field (fieldname (id))
-               (expr (expr (id))
-                     (args (expr (number))
-                           (expr (number))
-                           (expr (number))
-                           ))))))
+               (functioncall
+                   (id)
+                   (args (number)
+                         (number)
+                         (number)))
+))))
 
 =================================
 should parse tailstrict
@@ -140,15 +157,15 @@ should parse tailstrict
 ---
 
 (document
-  (expr
+  (object
      (member (field (fieldname (id))
-               (expr (expr (id))
-                     (args (expr (number))
-                           (expr (number))
-                           (expr (number))
-                           )
-                     (tailstrict)
-   )))))
+               (functioncall
+                   (id)
+                   (args (number)
+                         (number)
+                         (number))
+               (tailstrict))
+))))
 
 =================================
 should parse if-then-else
@@ -158,22 +175,22 @@ if x > 0 then x + 2 else x - 2
 
 ---
 (document
-  (expr
+  (conditional
     condition:
-      (expr
-          left: (expr (id))
+      (binaryop
+          left: (id)
           operator: (binaryop_comparison)
-          right: (expr (number)))
+          right: (number))
     consequence:
-      (expr
-          left: (expr (id))
+      (binaryop
+          left: (id)
           operator: (binaryop_additive)
-          right: (expr (number)))
+          right: (number))
     alternative:
-      (expr
-          left: (expr (id))
+      (binaryop
+          left: (id)
           operator: (binaryop_additive)
-          right: (expr (number)))))
+          right: (number))))
 
 =================================
 if-then-else vs local priority
@@ -183,31 +200,30 @@ local a = if x > 0 then x + 2 else x - 2; a + 2
 
 ---
 (document
-  (expr
     (local_bind
       (local)
       (bind (id)
-        (expr
+        (conditional
           condition:
-            (expr
-                left: (expr (id))
+            (binaryop
+                left: (id)
                 operator: (binaryop_comparison)
-                right: (expr (number)))
+                right: (number))
           consequence:
-            (expr
-                left: (expr (id))
+            (binaryop
+                left: (id)
                 operator: (binaryop_additive)
-                right: (expr (number)))
+                right: (number))
           alternative:
-            (expr
-                left: (expr (id))
+            (binaryop
+                left: (id)
                 operator: (binaryop_additive)
-                right: (expr (number)))
+                right: (number))
          ))
-      (expr
-          left: (expr (id))
+      (binaryop
+          left: (id)
           operator: (binaryop_additive)
-          right: (expr (number))))))
+          right: (number))))
 
 =================================
 operator precedence
@@ -217,14 +233,14 @@ operator precedence
 ---
 
 (document
-  (expr
-     left: (expr (number))
+  (binaryop
+     left: (number)
      operator: (binaryop_additive)
      right:
-        (expr
-           left: (expr (number))
+        (binaryop
+           left: (number)
            operator: (binaryop_multiplicative)
-           right: (expr (true)))))
+           right: (true))))
 
 ======================
 Application priority
@@ -234,11 +250,11 @@ Application priority
 
 ---
 (document
-  (expr
-    (unaryop)
-    (expr
-      (expr (id))
-      (args (expr (number)) (expr (number))))))
+  (unary
+      operator: (unaryop)
+      argument: (functioncall
+                    (id)
+                    (args (number) (number)))))
 
 ======================
 Implicit plus with empty object
@@ -249,6 +265,6 @@ Implicit plus with empty object
 ---
 
 (document
-  (expr
-    (expr
-      (expr))))
+  (implicit_plus
+    (parenthesis (object))
+    (object)))
